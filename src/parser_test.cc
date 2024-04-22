@@ -61,6 +61,30 @@ TEST(ParserTest, parseBool)
     EXPECT_FALSE(v.get<bool>("y"));
 }
 
+TEST(ParserTest, parseHex)
+{
+    toml::Value v = parse(
+        "x = 0x123\n"
+        "y = 0xbeEF\n"
+        "z = 0x0012BeEf\n");
+
+    EXPECT_EQ(0x123, v.get<int>("x"));
+    EXPECT_EQ(0xbeef, v.get<int>("y"));
+    EXPECT_EQ(0x12beef, v.get<int>("z"));
+}
+
+TEST(ParserTest, parseHexwithDelimiter)
+{
+    toml::Value v = parse(
+        "x = 0x1234_5678\n"
+        "y = 0xbeE_Fe\n"
+        "z = 0x_00_12_Be_Ef_\n");
+
+    EXPECT_EQ(0x12345678, v.get<int>("x"));
+    EXPECT_EQ(0xbeefe, v.get<int>("y"));
+    EXPECT_EQ(0x12beef, v.get<int>("z"));
+}
+
 TEST(ParserTest, parseInt)
 {
     toml::Value v = parse(

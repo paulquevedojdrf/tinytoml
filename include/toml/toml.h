@@ -483,6 +483,30 @@ inline std::string unescape(const std::string& codepoint)
     return reinterpret_cast<char*>(buf);
 }
 
+// Returns true if |s| is hexadecimal.
+// 0x([a-fA-F\d]+)*
+inline bool isHexadecimal(const std::string& s)
+{
+    if (s.empty())
+        return false;
+
+    if (s.find("0x") != 0)
+        return false;
+
+    for (std::string::size_type i = 2; i < s.size(); i++) {
+        auto c = s[i];
+        if (c == '_') {
+            continue;
+        }
+        if (!(('0' <= c && c <= '9') ||
+              ('a' <= c && c <= 'f') ||
+              ('A' <= c && c <= 'F'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // Returns true if |s| is integer.
 // [+-]?\d+(_\d+)*
 inline bool isInteger(const std::string& s)
@@ -842,9 +866,18 @@ inline Token Lexer::nextValue()
     }
 
     while (current(&c) && (('0' <= c && c <= '9') || c == '.' || c == 'e' || c == 'E' ||
+                           c == 'x' || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F') ||
                            c == 'T' || c == 'Z' || c == '_' || c == ':' || c == '-' || c == '+')) {
         next();
         s += c;
+    }
+
+    if (isHexadecimal(s)) {
+        std::stringstream ss;
+        std::int64_t x;
+        ss << std::hex << removeDelimiter(s);
+        ss >> x;
+        return Token(TokenType::INT, x);
     }
 
     if (isInteger(s)) {

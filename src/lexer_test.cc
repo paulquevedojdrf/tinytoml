@@ -121,6 +121,50 @@ TEST(LexerTest, integer5)
     EXPECT_EQ(TokenType::END_OF_FILE, lexer.nextValueToken().type());
 }
 
+TEST(LexerTest, hex1)
+{
+    stringstream ss("0x100");
+    Lexer lexer(ss);
+
+    auto nextToken = lexer.nextValueToken();
+    EXPECT_EQ(TokenType::INT, nextToken.type());
+    EXPECT_EQ(0x100, nextToken.intValue());
+    EXPECT_EQ(TokenType::END_OF_FILE, lexer.nextValueToken().type());
+}
+
+TEST(LexerTest, hex2)
+{
+    stringstream ss("0xdeadbeef");
+    Lexer lexer(ss);
+
+    auto nextToken = lexer.nextValueToken();
+    EXPECT_EQ(TokenType::INT, nextToken.type());
+    EXPECT_EQ(0xdeadbeef, nextToken.intValue());
+    EXPECT_EQ(TokenType::END_OF_FILE, lexer.nextValueToken().type());
+}
+
+TEST(LexerTest, hex3)
+{
+    stringstream ss("0xC0DE");
+    Lexer lexer(ss);
+
+    auto nextToken = lexer.nextValueToken();
+    EXPECT_EQ(TokenType::INT, nextToken.type());
+    EXPECT_EQ(0xc0de, nextToken.intValue());
+    EXPECT_EQ(TokenType::END_OF_FILE, lexer.nextValueToken().type());
+}
+
+TEST(LexerTest, hex4)
+{
+    stringstream ss("0x_C_0_D__E_");
+    Lexer lexer(ss);
+
+    auto nextToken = lexer.nextValueToken();
+    EXPECT_EQ(TokenType::INT, nextToken.type());
+    EXPECT_EQ(0xc0de, nextToken.intValue());
+    EXPECT_EQ(TokenType::END_OF_FILE, lexer.nextValueToken().type());
+}
+
 TEST(LexerTest, time1)
 {
     stringstream ss("1979-05-27T07:32:00Z");
@@ -145,7 +189,7 @@ TEST(LexerTest, exmaple1)
 TEST(LexerTest, exmaple2)
 {
     stringstream ss(
-        "x = [1, 2, 3]\n"
+        "x = [1, 0x2, 3]\n"
         "y = []\n"
         "z = [\"\", \"\", ]");
     Lexer lexer(ss);
@@ -184,7 +228,7 @@ TEST(LexerTest, exmaple3)
         "[[kotori]]\n"
         "foo = 1\n"
         "[[kotori]]\n"
-        "bar = 2\n");
+        "bar = 0x2\n");
     Lexer lexer(ss);
 
     EXPECT_EQ(TokenType::LBRACKET, lexer.nextKeyToken().type());
